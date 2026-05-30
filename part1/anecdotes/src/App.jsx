@@ -13,12 +13,33 @@ const App = () => {
   ];
    
   const [selected, setSelected] = useState(0);
+  const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0));
+
+  const handleRandomClick = () => {
+    let newSelected = Math.floor(Math.random() * anecdotes.length);
+    if (newSelected === selected) {
+      newSelected = ++newSelected % anecdotes.length;
+    }
+    setSelected(newSelected);
+  };
+
+  const handleVoteClick = () => {
+    setVotes(votes.map((vote, i) => i === selected ? vote + 1 : vote));
+  };
+
+  const favoriteAnecdote = anecdotes[votes.indexOf(Math.max(...votes))];
 
   return (
     <div>
-      {anecdotes[selected]}
+      <h1>Anecdote of the day</h1>
+      <p>{anecdotes[selected]}</p>
+      <p>has {votes[selected]} votes</p>
+      <button onClick={handleVoteClick}>vote</button>
+      <button onClick={handleRandomClick}>next anecdote</button>
+      <h1>Most favorite anecdote</h1>
+      <p>{favoriteAnecdote}</p>
     </div>
   );
-}
+};
 
 export default App;
