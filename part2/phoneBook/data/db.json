@@ -29,11 +29,6 @@
       "name": "denis",
       "number": "+4512-213-123",
       "id": "Ah0kJ_-WSPk"
-    },
-    {
-      "name": "max",
-      "number": "1",
-      "id": "7DBnL-bk0hg"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -17,9 +17,13 @@ function create(newPerson) {
   return request.then(response => response.data);
 }
 
-function update(id, updatedPerson) {
-  const request = axios.put(`${baseUrl}/${id}`, updatedPerson);
-  return request.then(response => response.data);
+function update(id, personToUpdate) {
+  console.log('update', personToUpdate);
+  const request = axios.put(`${baseUrl}/${id}`, personToUpdate);
+  return request.then(response => {
+    console.log('response', response.data);
+    return response.data;
+  });
 }
 
 function remove(id) {
