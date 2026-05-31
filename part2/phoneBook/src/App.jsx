@@ -1,18 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 import Filter from "./components/Filter";
 import NewContactForm from "./components/NewContactForm";
 import PhoneBook from "./components/PhoneBook";
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]);
+  const [persons, setPersons] = useState([]);
+  const personsUrl = 'http://localhost:3001/persons';
+
   const [filter, setFilter] = useState('');
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
+
+  useEffect(() => {
+    axios
+      .get(personsUrl)
+      .catch(() => alert("Something went wrong :("))
+      .then(response => setPersons(response.data));
+  }, []);
   
   const handleNewContactSubmit = (event) => {
     event.preventDefault();
@@ -51,9 +56,8 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       <Filter filter={filter} onFilterChange={handleFilterChange} />
-      <NewContactForm onSubmit={handleNewContactSubmit}
-      newName={newName}
-      newNumber={newNumber}
+      <NewContactForm newName={newName} newNumber={newNumber}
+      onSubmit={handleNewContactSubmit}
       onNameChange={handleNameChange}
       onNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
