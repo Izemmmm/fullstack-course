@@ -3,6 +3,7 @@ import personsService from "./services/persons";
 import Filter from "./components/Filter";
 import NewContactForm from "./components/NewContactForm";
 import PhoneBook from "./components/PhoneBook";
+import InfoBar from "./components/InfoBar";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -10,14 +11,15 @@ const App = () => {
   const [filter, setFilter] = useState('');
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
+  const [infoMessage, setInfoMessage] = useState(null);
 
-  const getInitialContacts = () => {
+  const getAllContacts = () => {
     personsService
       .getAll()
       .then(data => setPersons(data))
       .catch(() => alert("Something went wrong :("));
   };
-  useEffect(getInitialContacts, []);
+  useEffect(getAllContacts, []);
 
   const addNewContact = (newPerson) => {
     personsService
@@ -39,7 +41,10 @@ const App = () => {
     personsService
       .remove(id)
       .then(() => setPersons(persons.filter(person => person.id !== id)))
-      .catch(() => alert("Can't delete this contact"));
+      .catch(() => {
+        displayMessage("Can't delete this contact", true);
+        getAllContacts();
+      });
   };
   
   const handleNewContactSubmit = (event) => {
@@ -56,6 +61,7 @@ const App = () => {
       const confirmation = window.confirm(`Replace number for ${newName}?`);
       if (confirmation) {
         updateContact(existingId, {name: newName, number: newNumber});
+        displayMessage(`Number for ${newName} was changed to ${newNumber}`);
         setNewName('');
         setNewNumber('');
       }
@@ -63,6 +69,7 @@ const App = () => {
     }
 
     addNewContact({name: newName, number: newNumber});
+    displayMessage(`New contact added: ${newName} ${newNumber}`);
 
     setNewName('');
     setNewNumber('');
@@ -91,8 +98,14 @@ const App = () => {
     deleteContact(id);
   };
 
+  const displayMessage = (text, isCritical = false) => {
+    setInfoMessage({text, isCritical});
+    setTimeout(() => setInfoMessage(null), 3000);
+  };
+
   return (
     <div>
+      <InfoBar message={infoMessage} />
       <h2>Phonebook</h2>
       <Filter filter={filter} onFilterChange={handleFilterChange} />
       <NewContactForm newName={newName} newNumber={newNumber}
