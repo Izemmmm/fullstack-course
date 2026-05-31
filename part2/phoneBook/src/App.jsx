@@ -25,6 +25,13 @@ const App = () => {
       .then(addedPerson => setPersons(persons.concat(addedPerson)))
       .catch(e => alert(e));
   };
+
+  const deleteContact = (id) => {
+    personsService
+      .remove(id)
+      .then(setPersons(persons.filter(person => person.id !== id)))
+      .catch(() => alert("Can't delete this contact"));
+  };
   
   const handleNewContactSubmit = (event) => {
     event.preventDefault();
@@ -52,12 +59,16 @@ const App = () => {
   const handleNumberChange = (event) => {
     if (event.target.value && !/(^\+?\d+(\-\d*)*$)|(^\+$)/.test(event.target.value)) return;
     if (/--+/.test(event.target.value)) return;
-    
+
     setNewNumber(event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
+  };
+
+  const handleDeleteClick = (id) => {
+    deleteContact(id);
   };
 
   return (
@@ -69,7 +80,7 @@ const App = () => {
       onNameChange={handleNameChange}
       onNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <PhoneBook persons={persons} filter={filter} />
+      <PhoneBook persons={persons} filter={filter} onDeleteClick={handleDeleteClick} />
     </div>
   );
 };
