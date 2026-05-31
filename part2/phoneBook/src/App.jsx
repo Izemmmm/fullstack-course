@@ -1,23 +1,30 @@
 import { useState, useEffect } from "react";
-import axios from 'axios';
+import personsService from "./services/persons";
 import Filter from "./components/Filter";
 import NewContactForm from "./components/NewContactForm";
 import PhoneBook from "./components/PhoneBook";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const personsUrl = 'http://localhost:3001/persons';
 
   const [filter, setFilter] = useState('');
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
 
-  useEffect(() => {
-    axios
-      .get(personsUrl)
+  const getInitialContacts = () => {
+    personsService
+      .getAll()
       .catch(() => alert("Something went wrong :("))
-      .then(response => setPersons(response.data));
-  }, []);
+      .then(data => setPersons(data));
+  };
+  useEffect(getInitialContacts, []);
+
+  const addNewContact = (newPerson) => {
+    personsService
+      .create(newPerson)
+      .then(addedPerson => setPersons(persons.concat(addedPerson)))
+      .catch(e => alert(e));
+  };
   
   const handleNewContactSubmit = (event) => {
     event.preventDefault();
@@ -32,7 +39,8 @@ const App = () => {
       return;
     }
 
-    setPersons(persons.concat({name: newName, number: newNumber, id: persons.length + 1}));
+    addNewContact({name: newName, number: newNumber});
+
     setNewName('');
     setNewNumber('');
   };
@@ -44,12 +52,12 @@ const App = () => {
   const handleNumberChange = (event) => {
     if (event.target.value && !/(^\+?\d+(\-\d*)*$)|(^\+$)/.test(event.target.value)) return;
     if (/--+/.test(event.target.value)) return;
+    
     setNewNumber(event.target.value);
   };
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
-
   };
 
   return (
