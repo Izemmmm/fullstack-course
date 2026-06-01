@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import countriesService from './services/countries';
+import weatherService from './services/weather';
 import Notification from './components/Notification';
 import Search from './components/Search';
 import CountryList from './components/CountryList';
@@ -10,8 +11,9 @@ function App() {
   const [isError, setIsError] = useState(false);
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState(null);
   const [search, setSearch] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [weather, setWeather] = useState(null);
 
   const displayMessage = (message, isError = false) => {
     setNotificationMessage(message);
@@ -42,6 +44,17 @@ function App() {
     setFilteredCountries(filtered);
   }, [search]);
 
+  useEffect(() => {
+    if (!selectedCountry) return;
+
+    weatherService
+      .getCountryWeather(selectedCountry)
+      .then(weather => {
+        setWeather({temp: weather.main.temp, wind: weather.wind.speed, image: weatherService.getIconUrl(weather.weather[0].icon)});
+      })
+      .catch(e => displayMessage("Can't load the weather", true));
+  }, [selectedCountry]);
+
   const handleSearchChange = (event) => {
     setSearch(event.target.value);
   };
@@ -55,7 +68,7 @@ function App() {
       <Notification message={notificationMessage} isError={isError}></Notification>
       <Search onSearch={handleSearchChange} value={search} />
       {filteredCountries.length !== 1 && <CountryList countries={filteredCountries} onSelectSuggestion={handleSelectSuggestion} />}
-      {selectedCountry && <CountryInfo country={selectedCountry} />}
+      {selectedCountry && <CountryInfo country={selectedCountry} weather={weather} />}
     </div>
   )
 }

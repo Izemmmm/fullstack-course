@@ -1,4 +1,7 @@
-export default function CountryInfo({country}) {
+import WeatherInfo from "./WeatherInfo";
+
+export default function CountryInfo({country, weather}) {
+  console.log("Country info", weather);
   return (
     <div>
       <h1>{country.name.common}</h1>
@@ -13,6 +16,8 @@ export default function CountryInfo({country}) {
         }
       </ul>
       <img style={{border: "2px solid black"}} src={country.flags.png} alt={country.flags.alt}/>
+      <h3>Weather in {country.capital[0]}</h3>
+      {weather && <WeatherInfo temp={weather.temp} wind={weather.wind} image={weather.image} />}
     </div>
   );
 }
