@@ -46,15 +46,15 @@ function App() {
     setSearch(event.target.value);
   };
 
-  const handleSelectSuggestion = (countryName) => {
-    setSearch(countryName);
+  const handleSelectSuggestion = (country) => {
+    setSelectedCountry(country);
   };
 
   return (
     <div>
       <Notification message={notificationMessage} isError={isError}></Notification>
       <Search onSearch={handleSearchChange} value={search} />
-      {(!selectedCountry) && <CountryList countries={filteredCountries} onSelectSuggestion={handleSelectSuggestion} />}
+      {filteredCountries.length !== 1 && <CountryList countries={filteredCountries} onSelectSuggestion={handleSelectSuggestion} />}
       {selectedCountry && <CountryInfo country={selectedCountry} />}
     </div>
   )

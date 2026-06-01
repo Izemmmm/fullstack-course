@@ -11,8 +11,9 @@ export default function CountryList({countries, onSelectSuggestion}) {
     <>
       {countries.map(country => {
         return (
-          <div>
-            <button key={country.name.common} onClick={() => onSelectSuggestion(country.name.common)}>{country.name.common}</button>
+          <div key={country.name.common}>
+            {country.name.common}
+            <button onClick={() => onSelectSuggestion(country)}>Show</button>
           </div>
         );
       })}
