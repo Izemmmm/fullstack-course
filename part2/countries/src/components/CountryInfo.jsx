@@ -12,7 +12,7 @@ export default function CountryInfo({country}) {
             .map(language => <li key={language}>{language}</li>)
         }
       </ul>
-      <img style={{border: "2px solid black"}} src={country.flags.png} alt={country.flag.alt}/>
+      <img style={{border: "2px solid black"}} src={country.flags.png} alt={country.flags.alt}/>
     </div>
   );
 }
