@@ -5,6 +5,7 @@ import persons from "../data/persons.js";
 
 const app = express();
 
+app.use(express.static('dist'));
 app.use(express.json());
 
 morgan.token('body', (req, res) => JSON.stringify(req.body));
@@ -60,7 +61,7 @@ app.delete('/api/persons/:id', (request, response) => {
   response.sendStatus(204);
 });
 
-const port = 3001;
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`Server is running. Port: ${port}`);
 });
