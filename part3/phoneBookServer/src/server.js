@@ -1,10 +1,14 @@
-import express from "express";
+import express, { json } from "express";
 import cors from "cors";
+import morgan from "morgan";
 import persons from "../data/persons.js";
 
 const app = express();
 
 app.use(express.json());
+
+morgan.token('body', (req, res) => JSON.stringify(req.body));
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 app.use(cors());
 
 app.get('/api/persons', (request, response) => {
@@ -25,8 +29,6 @@ app.get('/info', (request, response) => {
 });
 
 app.post('/api/persons', (request, response) => {
-  console.log("post header", request.headers);
-  console.log("post body", request.body);
   const body = request.body;
 
   if (!body.name) {
@@ -44,9 +46,7 @@ app.post('/api/persons', (request, response) => {
   const newId = Math.floor(Math.random() * 1000000);
   const newPerson = {name: body.name, number: body.number, id: String(newId)};
 
-  console.log("persons before post", persons);
   persons.push(newPerson);
-  console.log("persons after post", persons);
   response.send(newPerson);
 });
 
