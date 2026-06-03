@@ -17,67 +17,64 @@ const [, , password, newName, newNumber] = process.argv;
 
 const connectionString = `mongodb+srv://izemmmm:${password}@phonebook.qdkabxi.mongodb.net/phoneBook?appName=phoneBook`;
 
-const isConnected = await connectDB(connectionString);
+connectDB(connectionString).then(isConnected => {
+  if (!isConnected) {
+    console.log('Connection failed');
+    process.exit(1);
+  }
 
-if (!isConnected) {
-  console.log('Connection failed');
-  process.exit(1);
-}
+  const phoneBookSchema = new mongoose.Schema({
+    name: String,
+    number: String
+  });
+  const BookRecord = mongoose.model('BookRecord', phoneBookSchema);
+  const newRecord = new BookRecord({name: newName, number: newNumber});
 
-const phoneBookSchema = new mongoose.Schema({
-  name: String,
-  number: String
+  if (isNewContact) {
+    addRecord(newRecord).then(sentData => {
+      const message = sentData ?
+        `added ${sentData.name} ${sentData.number} to phonebook`
+        :
+        'Error while creating new contact';
+
+      console.log(message);
+    });
+  }
+  else {
+    getRecords(BookRecord).then(records => {
+      const message = records ? 'phonebook:\n' +
+        records.map(record => {
+          return `${record.name} ${record.number}`;
+        }).join('\n')
+        :
+        'Error while fetching data';
+
+      console.log(message);
+    });
+  }
 });
-const BookRecord = mongoose.model('BookRecord', phoneBookSchema);
-const newRecord = new BookRecord({name: newName, number: newNumber});
 
-if (isNewContact) {
-  const sentData = await addRecord(newRecord);
-  const message = sentData ? 
-    `added ${sentData.name} ${sentData.number} to phonebook`
-    : 
-    'Error while creating new contact';
 
-  console.log(message);
-}
-else {
-  const records = await getRecords(BookRecord);
-  const message = records ? 'phonebook:\n' + 
-    records.map(record => {
-      return `${record.name} ${record.number}`;
-    }).join('\n')
-    : 
-    'Error while fetching data';
-  
-  console.log(message);
+function connectDB(url) {
+  return mongoose.connect(url, {family: 4})
+    .then(() => true)
+    .catch(() => false);
 }
 
-
-async function connectDB(url) {
-  try {
-    await mongoose.connect(url, {family: 4});
-    return true;
-  } catch (error) {
-    return false;
-  }
+function addRecord(record) {
+  return record.save()
+    .then(sentData => {
+      mongoose.connection.close();
+      return sentData;
+    })
+    .catch(() => null);
 }
 
-async function addRecord(record) {
-  try {
-    const sentData = await record.save();
-    mongoose.connection.close();
-    return sentData;
-  } catch (error) {
-    return null;
-  }
-}
-
-async function getRecords(model) {
-  try {
-    const records = await model.find({});
-    mongoose.connection.close();
-    return records;
-  } catch (error) {
-    return null;
-  }
+function getRecords(model) {
+  return model.find({})
+    .then(records => {
+      mongoose.connection.close();
+      return records;
+    })
+    .catch(() => null);
 }
