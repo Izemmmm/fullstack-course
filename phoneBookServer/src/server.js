@@ -1,6 +1,6 @@
 import express, { json } from "express";
 import morgan from "morgan";
-import persons from "../data/persons.js";
+import persons from "../db/mongo.js";
 
 const app = express();
 
@@ -11,15 +11,20 @@ morgan.token('body', (req, res) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
 app.get('/api/persons', (request, response) => {
-  response.send(persons);
+  persons
+    .getPersons()
+    .then(persons => {
+      console.log('get all', persons);
+      response.send(persons);
+    })
+    .catch(e => console.log(e));
 });
 
 app.get('/api/persons/:id', (request, response) => {
-  const person = persons.find(person => person.id === request.params.id)
-  if (!person) {
-    return response.sendStatus(404);
-  }
-  response.send(person);
+  persons
+    .getPersonById(request.params.id)
+    .then(person => response.send(person))
+    .catch(e => response.sendStatus(404));
 });
 
 app.get('/info', (request, response) => {
@@ -38,15 +43,23 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({error: "number is missing"})
   }
   
-  if (persons.find(person => person.name === body.name)) {
-    return response.status(400).json({error: "person already exists"})
-  }
-
-  const newId = Math.floor(Math.random() * 1000000);
-  const newPerson = {name: body.name, number: body.number, id: String(newId)};
-
-  persons.push(newPerson);
-  response.send(newPerson);
+  persons
+    .getPersonByName(body.name)
+    .then(person => {
+      if (person.length) {
+        console.log(`person ${body.name} found`, person);
+        return response.status(400).json({error: "person already exists"});
+      }
+      else{
+        console.log(`person ${body.name} not found`);
+        return persons
+                 .addPerson(body.name, body.number)
+                 .then(addedPerson => {
+                   return response.send({name: body.name, number: body.number});
+                 });
+      }
+    })
+    .catch(e => console.log('error occured while creating person', e));
 });
 
 app.delete('/api/persons/:id', (request, response) => {
