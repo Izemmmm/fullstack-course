@@ -1,5 +1,4 @@
 import express, { json } from "express";
-import cors from "cors";
 import morgan from "morgan";
 import persons from "../data/persons.js";
 
@@ -10,7 +9,6 @@ app.use(express.json());
 
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
-app.use(cors());
 
 app.get('/api/persons', (request, response) => {
   response.send(persons);
