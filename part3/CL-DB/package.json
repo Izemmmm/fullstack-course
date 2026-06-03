@@ -1,0 +1,15 @@
+{
+  "name": "cl-db",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "mongo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mongoose": "^9.6.3"
+  }
+}
