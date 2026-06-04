@@ -16,16 +16,22 @@ const App = () => {
   const getAllContacts = () => {
     personsService
       .getAll()
-      .then(data => setPersons(data))
+      .then(data => {
+        console.log(data);
+        return setPersons(data);
+      })
       .catch(() => alert("Something went wrong :("));
   };
   useEffect(getAllContacts, []);
 
   const addNewContact = (newPerson) => {
-    personsService
+    return personsService
       .create(newPerson)
-      .then(addedPerson => setPersons(persons.concat(addedPerson)))
-      .catch(e => alert(e));
+      .then(addedPerson => {
+        setPersons(persons.concat(addedPerson));
+        displayMessage(`New contact added: ${newName} ${newNumber}`);
+      })
+      .catch(e => displayMessage(e.response.data.error, true));
   };
 
   const updateContact = (id, personToUpdate) => {
@@ -69,7 +75,6 @@ const App = () => {
     }
 
     addNewContact({name: newName, number: newNumber});
-    displayMessage(`New contact added: ${newName} ${newNumber}`);
 
     setNewName('');
     setNewNumber('');

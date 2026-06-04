@@ -1,9 +1,11 @@
 import express, { json, request } from "express";
+import cors from 'cors';
 import morgan from "morgan";
 import persons from "../db/mongo.js";
 
 const app = express();
 
+app.use(cors());
 app.use(express.static('dist'));
 app.use(express.json());
 
@@ -87,6 +89,8 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.use((err, req, res, next) => {
   if (err.name === 'CastError') {
     return res.status(400).send('bad id format');
+  } else if (err.name === 'ValidationError') {
+    return res.status(400).json({error: err.message});
   }
   next(err);
 });
