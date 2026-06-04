@@ -23,22 +23,45 @@ personSchema.set('toJSON', {
 
 const Person = mongoose.model('Person', personSchema);
 
-function getPersons() {
+function getAll() {
   
   return Person.find({});
 }
 
-function getPersonById(id) {
-  return Person.find({id: id});
+function getById(id) {
+  return Person.findById(id);
 }
 
-function getPersonByName(name) {
+function getByName(name) {
   return Person.find({name: name});
 }
 
-function addPerson(name, number) {
+function getCount(filter = {}) {
+  return Person.countDocuments(filter);
+}
+
+function add(name, number) {
   const newPerson = new Person({name: name, number: number});
   return newPerson.save();
 }
 
-export default {getPersons, getPersonById, getPersonByName, addPerson};
+function update(id, personUpdate) {
+  return Person
+    .findById(id)
+    .then(person => {
+      console.log('person for update:', person);
+      if (!person) {
+        return null;
+      }
+
+      person.name = personUpdate.name;
+      person.number = personUpdate.number;
+      return person.save();
+    });
+}
+
+function remove(id) {
+  return Person.findByIdAndDelete(id);
+}
+
+export default {getAll, getById, getByName, getCount, add, update, remove};

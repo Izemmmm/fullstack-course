@@ -1,4 +1,4 @@
-import express, { json } from "express";
+import express, { json, request } from "express";
 import morgan from "morgan";
 import persons from "../db/mongo.js";
 
@@ -10,29 +10,34 @@ app.use(express.json());
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
   persons
-    .getPersons()
+    .getAll()
     .then(persons => {
       console.log('get all', persons);
       response.send(persons);
     })
-    .catch(e => console.log(e));
+    .catch(e => next(e));
 });
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   persons
-    .getPersonById(request.params.id)
-    .then(person => response.send(person))
-    .catch(e => response.sendStatus(404));
+    .getById(request.params.id)
+    .then(person => person ? response.send(person) : response.sendStatus(404))
+    .catch(e => next(e));
 });
 
-app.get('/info', (request, response) => {
-  const info = `Phone book has info for ${persons.length} people\n${new Date()}`;
-  response.send(info);
+app.get('/info', (request, response, next) => {
+  persons
+    .getCount()
+    .then(count => {
+      const info = `Phone book has info for ${count} people\n${new Date()}`;
+      return response.send(info);
+    })
+    .catch(e => next(e));
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body;
 
   if (!body.name) {
@@ -44,7 +49,7 @@ app.post('/api/persons', (request, response) => {
   }
   
   persons
-    .getPersonByName(body.name)
+    .getByName(body.name)
     .then(person => {
       if (person.length) {
         console.log(`person ${body.name} found`, person);
@@ -53,23 +58,42 @@ app.post('/api/persons', (request, response) => {
       else{
         console.log(`person ${body.name} not found`);
         return persons
-                 .addPerson(body.name, body.number)
-                 .then(addedPerson => {
-                   return response.send({name: body.name, number: body.number});
-                 });
+                 .add(body.name, body.number)
+                 .then(addedPerson => response.send(addedPerson));
       }
     })
-    .catch(e => console.log('error occured while creating person', e));
+    .catch(e => next(e));
 });
 
-app.delete('/api/persons/:id', (request, response) => {
-  const index = persons.findIndex(person => person.id === request.params.id);
-  if (index === -1){
-    return response.sendStatus(204);
-  }
+app.put('/api/persons/:id', (request, response, next) => {
+  persons
+    .update(request.params.id, request.body)
+    .then(updatedPerson => {
+      if (!updatedPerson) {
+        return response.sendStatus(404);
+      }
+      response.send(updatedPerson);
+    })
+    .catch(e => next(e)); 
+});
 
-  persons.splice(index, 1);
-  response.sendStatus(204);
+app.delete('/api/persons/:id', (request, response, next) => {
+  persons
+    .remove(request.params.id)
+    .then(response.sendStatus(204))
+    .catch(e => next(e));
+});
+
+app.use((err, req, res, next) => {
+  if (err.name === 'CastError') {
+    return res.status(400).send('bad id format');
+  }
+  next(err);
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.sendStatus(500);
 });
 
 const port = process.env.PORT || 3001;
