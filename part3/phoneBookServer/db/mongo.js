@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
 dotenv.config();
 const dbUri = process.env.MONGODB_URI;
 
-mongoose.connect(dbUri, {family: 4})
-  .then(result => console.log('Connected to MongoDB'))
+mongoose.connect(dbUri, { family: 4 })
+  .then(() => console.log('Connected to MongoDB'))
   .catch(e => console.log('Connection failed:', e));
 
 const personSchema = new mongoose.Schema({
@@ -18,7 +18,7 @@ const personSchema = new mongoose.Schema({
     minLength: 8,
     validate: {
       //numbers like +countrycode-num-num... are accepted|
-      validator: value => /(^\+?\d+(\-\d+)*$)/.test(value),
+      validator: value => /(^\+?\d+(-\d+)*$)/.test(value),
       message: props => `${props.value} is not a valid phone number`
     }
   }
@@ -35,7 +35,7 @@ personSchema.set('toJSON', {
 const Person = mongoose.model('Person', personSchema);
 
 function getAll() {
-  
+
   return Person.find({});
 }
 
@@ -44,7 +44,7 @@ function getById(id) {
 }
 
 function getByName(name) {
-  return Person.find({name: name});
+  return Person.find({ name: name });
 }
 
 function getCount(filter = {}) {
@@ -52,7 +52,7 @@ function getCount(filter = {}) {
 }
 
 function add(name, number) {
-  const newPerson = new Person({name: name, number: number});
+  const newPerson = new Person({ name: name, number: number });
   return newPerson.save();
 }
 
@@ -75,4 +75,4 @@ function remove(id) {
   return Person.findByIdAndDelete(id);
 }
 
-export default {getAll, getById, getByName, getCount, add, update, remove};
+export default { getAll, getById, getByName, getCount, add, update, remove };
