@@ -91,8 +91,28 @@ describe('most blogs', () => {
     blogs: 3
   };
 
+  const oneBlogList = [
+    {
+      _id: '665a1f1a1b2c3d4e5f6a0001',
+      title: 'Getting Started with Node.js',
+      author: 'Ilya Volkov',
+      url: 'https://example.com/nodejs-intro',
+      likes: 42,
+      __v: 0,
+    }
+  ];
+
+  const mostBlogsOneBlog = {
+    author: 'Ilya Volkov',
+    blogs: 1
+  };
+
   test('with empty list', () => {
     assert.strictEqual(mostBlogs([]), null);
+  });
+  
+  test('with one blog in list', () => {
+    assert.deepStrictEqual(mostBlogs(oneBlogList), mostBlogsOneBlog);
   });
 
   test('with filled list', () => {

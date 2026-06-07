@@ -27,14 +27,15 @@ export function mostBlogs(blogs) {
   if (!blogs.length) {
     return null;
   }
-  const blogsByAuthor = lodash.groupBy(blogs, (blog) => blog.author);
+
+  const blogsByAuthor = lodash.countBy(blogs, 'author');
   const mostBlogsAuthor = Object.entries(blogsByAuthor).reduce((bestAuthor, entry) => {
-    const authorBlogs = entry[1];
-    if (authorBlogs.length > bestAuthor.blogs) {
-      return {author: authorBlogs[0].author, blogs: authorBlogs.length};
+    if (entry[1] > bestAuthor.blogs) {
+      return {author: entry[0], blogs: entry[1]};
     }
     return bestAuthor;
   }, {blogs: -Infinity});
 
   return mostBlogsAuthor;
 }
+
