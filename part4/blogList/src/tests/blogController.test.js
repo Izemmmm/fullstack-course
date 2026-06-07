@@ -3,6 +3,7 @@ import {test, describe, beforeEach, after} from 'node:test';
 import Blog from '../models/blog.js';
 import app from '../app.js';
 import mongoose from 'mongoose';
+import { assert } from 'node:console';
 
 const api = supertest(app);
 
@@ -50,6 +51,13 @@ describe('blog controller', () => {
       .get('/api/blogs')
       .expect(200)
       .expect('Content-Type', /application\/json/);
+  });
+
+  test.only('ids are not "_id"', async () => {
+    const response = await api.get('/api/blogs');
+
+    const keys = Object.keys(response.body[0]);
+    assert(!keys.includes('_id') && keys.includes('id'))
   });
 
   after(async () => {
