@@ -39,3 +39,25 @@ export function mostBlogs(blogs) {
   return mostBlogsAuthor;
 }
 
+export function mostLikes(blogs) {
+  if (!blogs.length) {
+    return null;
+  }
+
+  const bloggersLikes = blogs.reduce((acc, blog) => {
+    if (!acc[blog.author]) {
+      acc[blog.author] = 0;
+    }
+    acc[blog.author] += blog.likes;
+    return acc;
+  }, {});
+
+  const topBlogger = Object.entries(bloggersLikes).reduce((bestAuthor, entry) => {
+    if (entry[1] > bestAuthor.likes) {
+      return {author: entry[0], likes: entry[1]};
+    }
+    return bestAuthor;
+  }, {likes: -Infinity});
+
+  return topBlogger;
+}
