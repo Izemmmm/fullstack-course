@@ -21,9 +21,26 @@ router.get('/:id', async (request, response) => {
 
 router.post('/', async (request, response) => {
   const blog = new Blog(request.body);
-
+  
   const savedBlog = await blog.save();
   response.status(201).json(savedBlog);
+});
+
+router.put('/:id', async (request, response) => {
+  const blogToUpdate = await Blog.findById(request.params.id);
+  console.log('blog to update', blogToUpdate);
+  if (!blogToUpdate) {
+    return response.status(404).json({error: 'not found'});
+  }
+  
+  blogToUpdate.set(request.body);
+  const updatedBlog = await blogToUpdate.save();
+  response.json(updatedBlog);
+});
+
+router.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndDelete(request.params.id);
+  response.sendStatus(204);
 });
 
 export default router;
