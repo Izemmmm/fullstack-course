@@ -28,7 +28,6 @@ router.post('/', async (request, response) => {
 
 router.put('/:id', async (request, response) => {
   const blogToUpdate = await Blog.findById(request.params.id);
-  console.log('blog to update', blogToUpdate);
   if (!blogToUpdate) {
     return response.status(404).json({error: 'not found'});
   }

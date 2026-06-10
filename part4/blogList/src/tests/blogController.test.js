@@ -1,10 +1,11 @@
 import supertest from 'supertest';
-import {test, describe, beforeEach, after} from 'node:test';
+import {test, describe, beforeEach} from 'node:test';
 import Blog from '../models/blog.js';
 import app from '../app.js';
 import mongoose from 'mongoose';
 import assert from 'node:assert';
-import * as helper from '../utils/testHelper.js';
+import '../utils/dbTestHelper.js';
+import * as helper from '../utils/blogControllerTestHelper.js';
 
 const api = supertest(app);
 
@@ -170,9 +171,5 @@ describe('blog controller', () => {
         .delete(`${helper.url}/6a27ce9e3eb7f822ca8b2620`)
         .expect(204);
     });
-  });
-
-  after(async () => {
-    await mongoose.connection.close();
   });
 });
