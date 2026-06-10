@@ -1,6 +1,6 @@
 export const initialUsers = [
   {
-    username: 'coolguy',
+    username: 'coolguy123',
     name: 'ilya volkov',
     password: '123abc'
   },
