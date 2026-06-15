@@ -5,5 +5,6 @@ export default function errorHandler(err, req, res, next) {
     return res.status(400).json({error: 'duplicate key'});
   }
 
+  console.log('error:', err.message);
   return res.status(500).json({error: 'something went wrong'});
 }

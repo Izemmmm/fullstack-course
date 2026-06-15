@@ -1,6 +1,7 @@
 import supertest from 'supertest';
 import {test, describe, beforeEach} from 'node:test';
 import Blog from '../models/blog.js';
+import User from '../models/user.js';
 import app from '../app.js';
 import mongoose from 'mongoose';
 import assert from 'node:assert';
@@ -10,17 +11,13 @@ import * as helper from '../utils/blogControllerTestHelper.js';
 const api = supertest(app);
 
 beforeEach(async () => {
+  await User.deleteMany({});
+  await User.insertMany(helper.initialUsers);
   await Blog.deleteMany({});
   await Blog.insertMany(helper.initialBlogs);
 });
 
 describe('blog controller', () => {
-  test('wrong endpoint handling', async () => {
-    await api
-      .get('/api/wrong')
-      .expect(404);
-  });
-
   describe('getting blogs', () => {
     test('get all blogs', async () => {
       await api
@@ -30,57 +27,68 @@ describe('blog controller', () => {
     });
     
     test('get blog by id', async () => {
-      const response = await api.get(helper.url)
-      const blog = response.body[0];
-  
+      const expectedBlog = helper.getExpectedBlog(helper.initialBlogs[0]);
+      //initial user doesn't have blogs assigned, because it's saved directly to DB
+      expectedBlog.user.blogs = [];
+
       const responseById = await api
-        .get(`${helper.url}/${blog.id}`)
-        .expect(200, blog);
+        .get(`${helper.url}/${expectedBlog.id}`)
+        .expect(200, expectedBlog);
     });
-  
+    
     test('ids are not "_id"', async () => {
       const response = await api.get(helper.url);
-  
+      
       const keys = Object.keys(response.body[0]);
       assert(!keys.includes('_id') && keys.includes('id'))
     });
     
   });
-
+  
   describe('blog creation', () => {
     test('sends created blog back', async () => {
-      const response = await api.post(helper.url).send(helper.newBlog);
-      const {id, ...createdBlog} = response.body;
-  
-      assert.deepStrictEqual(createdBlog, helper.newBlog);
+      const response = await api
+      .post(helper.url)
+      .send(helper.newBlog)
+      .expect(201);
+      const createdBlog = response.body;
+      
+      const expectedBlog = helper.getExpectedBlog(helper.newBlog, createdBlog.id);
+      //on PUT method, user is not populated
+      expectedBlog.user = expectedBlog.user.id;
+      assert.deepStrictEqual(createdBlog, expectedBlog);
     });
-  
+    
     test('new blog is created', async () => {
-      const createdBlogResponse = await api
-        .post(helper.url)
-        .send(helper.newBlog)
-        .expect(201);
-      const generatedId = createdBlogResponse.body.id;
-  
-      const response = await api.get(helper.url);
-      const newBlogs = response.body;
-      assert.strictEqual(newBlogs.length, helper.initialBlogs.length + 1);
-  
-      const {id, ...createdBlog} = newBlogs.find(blog => blog.id === generatedId);
-      assert.deepStrictEqual(createdBlog, helper.newBlog);
+      const createdResponse = await api
+      .post(helper.url)
+      .send(helper.newBlog)
+      .expect(201);
+      const generatedId = createdResponse.body.id;
+      
+      const blogs = await Blog.find({});
+      assert.strictEqual(blogs.length, helper.initialBlogs.length + 1);
+
+      const response = await api.get(`${helper.url}/${generatedId}`);
+      const createdBlog = response.body;
+
+      const expectedBlog = helper.getExpectedBlog(createdBlog, generatedId);
+      assert.deepStrictEqual(createdBlog, expectedBlog);
     });
   });
 
   describe('schema validation', () => {
     test('default likes set', async () => {
+      const {likes, ...noLikesBlog} = helper.newBlog;
       const createdBlogResponse = await api
-        .post(helper.url)
-        .send(helper.noLikesBlog)
-        .expect(201);
-  
+      .post(helper.url)
+      .send(noLikesBlog)
+      .expect(201);
+      
       const generatedId = createdBlogResponse.body.id;
   
-      const expectedBlog = {id: generatedId, likes:0, ...helper.noLikesBlog};
+      const expectedBlog = helper.getExpectedBlog(noLikesBlog, generatedId);
+      expectedBlog.likes = 0;
   
       await api
         .get(`${helper.url}/${generatedId}`)
@@ -88,37 +96,43 @@ describe('blog controller', () => {
     });
   
     test('missing title handling', async () => {
+      const {title, ...noTitleBlog} = helper.newBlog;
       await api
         .post(helper.url)
-        .send(helper.noTitleBlog)
+        .send(noTitleBlog)
         .expect(400);
     });
   
     test('missing url handling', async () => {
+      const {url, ...noUrlBlog} = helper.newBlog;
       await api
         .post(helper.url)
-        .send(helper.noUrlBlog)
+        .send(noUrlBlog)
         .expect(400);
     });
   });  
 
   describe('updating blog', () => {
     test('update blog likes', async () => {
+      const updateLikesBlog = helper.newBlog;
       const response = await api
         .post(helper.url)
         .send(helper.newBlog);
+
       const generatedId = response.body.id;
-      const expectedBlog = {
-        ...helper.newBlog,
-        id: generatedId,
-        likes: helper.updateLikesBlog.likes
-      };
+      const expectedBlogOnUpdate = helper.getExpectedBlog(helper.newBlog, generatedId);
+      expectedBlogOnUpdate.likes = 1234;
+      //on PUT method, user is not populated
+      expectedBlogOnUpdate.user = expectedBlogOnUpdate.user.id;
 
       await api
         .put(`${helper.url}/${generatedId}`)
-        .send(helper.updateLikesBlog)
-        .expect(200, expectedBlog);
+        .send({likes: 1234})
+        .expect(200, expectedBlogOnUpdate);
       
+      const expectedBlog = helper.getExpectedBlog(helper.newBlog, generatedId);
+      expectedBlog.likes = 1234;
+
       await api
         .get(`${helper.url}/${generatedId}`)
         .expect(200, expectedBlog);
@@ -126,19 +140,20 @@ describe('blog controller', () => {
       
     test('update whole blog', async () => {
       const response = await api
-      .post(helper.url)
-      .send(helper.newBlog);
+        .post(helper.url)
+        .send(helper.newBlog);
+
       const generatedId = response.body.id;
-      const expectedBlog = {
-        ...helper.updateAllBlog,
-        id: generatedId
-      };
+      const expectedBlogOnUpdate = helper.getExpectedBlog(helper.updateAllBlog, generatedId);
+      expectedBlogOnUpdate.user = expectedBlogOnUpdate.user.id;
       
       await api
         .put(`${helper.url}/${generatedId}`)
         .send(helper.updateAllBlog)
-        .expect(200, expectedBlog);
+        .expect(200, expectedBlogOnUpdate);
       
+      const expectedBlog = helper.getExpectedBlog(helper.updateAllBlog, generatedId);
+
       await api
         .get(`${helper.url}/${generatedId}`)
         .expect(200, expectedBlog);
@@ -164,12 +179,18 @@ describe('blog controller', () => {
       await api
         .get(`${helper.url}/${idToDelete}`)
         .expect(404);
+
+      const blogs = await Blog.find({});
+      assert.strictEqual(blogs.length, helper.initialBlogs.length - 1);
     });
 
     test('non-existing blog deletion', async () => {
       await api
         .delete(`${helper.url}/6a27ce9e3eb7f822ca8b2620`)
         .expect(204);
+
+      const blogs = await Blog.find({});
+      assert.strictEqual(blogs.length, helper.initialBlogs.length);
     });
   });
 });

@@ -4,6 +4,13 @@ import User from '../models/user.js';
 
 const router = Router();
 
+router.get('/', async (request, response) => {
+  const users = await User
+    .find({})
+    .populate('blogs', {user: 0});
+  response.json(users);
+});
+
 router.post('/', async (request, response) => {
   const {username, name, password} = request.body;
 

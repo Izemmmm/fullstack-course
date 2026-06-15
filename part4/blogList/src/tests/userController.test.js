@@ -19,17 +19,25 @@ describe('user controller', () => {
     }
   });
 
+  test('get all users', async () => {
+    const response = await api
+      .get(helper.url)
+      .expect(200);
+    for (const blog of response.body) {
+      delete blog.id;
+    }
+    assert.deepStrictEqual(response.body, helper.expectedInitialUsers);
+  });
+
   test('add new user', async () => {
     const response = await api
       .post(helper.url)
       .send(helper.newUser)
       .expect(201);
     
-    const expectedUser = {
-      username: helper.newUser.username,
-      name: helper.newUser.name,
-      id: response.body.id
-    };
+    const {password, ...expectedUser} = helper.newUser;
+    expectedUser.id = response.body.id;
+
     assert.deepStrictEqual(response.body, expectedUser);
 
     const users = await User.find({});
