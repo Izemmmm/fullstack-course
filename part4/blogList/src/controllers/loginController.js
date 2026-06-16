@@ -23,7 +23,7 @@ router.post('/', async (request, response) => {
     },
     process.env.SECRET,
     {expiresIn: 60*60});
-  
+
   response.json({token, username: user.username, name: user.name});
 });
 
