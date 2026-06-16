@@ -1,8 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import blogController from './controllers/blogController.js';
-import userController from './controllers/userController.js';
+import blogRouter from './controllers/blogController.js';
+import userRouter from './controllers/userController.js';
+import loginRouter from './controllers/loginController.js';
 import errorHandler from './middleware/errorHandler.js';
 import badRouteHandler from './middleware/badRouteHandler.js';
 
@@ -11,8 +12,9 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use('/api/users', userController);
-app.use('/api/blogs', blogController);
+app.use('/api/users', userRouter);
+app.use('/api/blogs', blogRouter);
+app.use('/api/login', loginRouter);
 app.use(badRouteHandler);
 app.use(errorHandler);
 

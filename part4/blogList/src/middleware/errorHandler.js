@@ -3,6 +3,8 @@ export default function errorHandler(err, req, res, next) {
     return res.status(400).json({error: err.message});
   } else if (err.name === 'MongoServerError' && err.code === 11000) {
     return res.status(400).json({error: 'duplicate key'});
+  } else if (error.name === 'JsonWebTokenError') {
+    return response.status(401).json({error: 'invalid token'})
   }
 
   console.log('error:', err.message);

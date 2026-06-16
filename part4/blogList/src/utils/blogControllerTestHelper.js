@@ -73,11 +73,15 @@ export const initialBlogs = [
   }
 ];
 
-export function getExpectedBlog(blog, id) {
+export function getExpectedBlog(blog, id, isPopulated = false) {
   const {_id, userId, ...expectedBlog} = blog;
   expectedBlog.id = id ?? _id;
-  expectedBlog.user = expectedInitialUsers[0];
-  expectedBlog.user.blogs = [expectedBlog.id];
+  if (isPopulated) {
+    expectedBlog.user = expectedInitialUsers[0];
+    expectedBlog.user.blogs = [expectedBlog.id];
+  } else {
+    expectedBlog.user =expectedInitialUsers[0].id;
+  }
 
   return expectedBlog;
 }
