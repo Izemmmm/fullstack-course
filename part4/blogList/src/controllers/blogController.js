@@ -2,6 +2,7 @@ import {Router} from 'express';
 import Blog from '../models/blog.js';
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
+import userExtractor from '../middleware/userExtractor.js';
 
 const router = Router();
 
@@ -25,15 +26,10 @@ router.get('/:id', async (request, response) => {
   }
 });
 
-router.post('/', async (request, response) => {
+router.post('/', userExtractor, async (request, response) => {
   const body = request.body;
 
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-  if (!decodedToken?.id) {
-    return response.status(401).json({error: 'invalid token'});
-  }
-  
-  const user = await User.findById(decodedToken.id);
+  const user = request.user;
   if (!user) {
     return response.status(400).json({error: 'userId is missing or invalid'});
   }
@@ -68,24 +64,22 @@ router.put('/:id', async (request, response) => {
   response.json(updatedBlog);
 });
 
-router.delete('/:id', async (request, response) => {
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-  if (!decodedToken?.id) {
-    return response.status(401).json({error: 'invalid token'});
+router.delete('/:id', userExtractor, async (request, response) => {
+  const user = request.user;
+  if (!user) {
+    return response.status(401).json({error: 'userId is missing or invalid'});
   }
-  const userId = decodedToken.id;
 
   const blogToDelete = await Blog.findById(request.params.id);
   if (!blogToDelete) {
     return response.sendStatus(204);
   }
 
-  if (userId.toString() !== blogToDelete.user.toString()) {
+  if (user._id.toString() !== blogToDelete.user.toString()) {
     return response.status(401).json({error: 'invalid token'});
   }
 
   await Blog.findByIdAndDelete(blogToDelete._id);
-  const user = await User.findById(userId);
 
   user.blogs = user.blogs
     .filter(blogId => blogId.toString() !== blogToDelete._id.toString());
