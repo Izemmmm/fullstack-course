@@ -26,4 +26,18 @@ async function create(blog) {
   return response.data;
 }
 
-export default {setToken, getAll, getById, create};
+async function update(id, updateData) {
+  const response = await axios.put(`${baseUrl}/${id}`, updateData);
+  return response.data;
+}
+
+async function remove(id) {
+  const response = await axios.delete(`${baseUrl}/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return response.data;
+}
+
+export default {setToken, getAll, getById, create, update, remove};

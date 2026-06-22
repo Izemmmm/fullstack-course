@@ -6,6 +6,7 @@ import BlogList from './components/BlogList';
 import UserStatusBar from './components/UserStatusBar';
 import NewBlogForm from './components/NewBlogForm';
 import InfoBar from './components/InfoPopup';
+import Toggleable from './components/Toggleable';
 
 function App() {
   const [token, setToken] = useState(() => {
@@ -53,7 +54,8 @@ function App() {
     const newBlog = {title, author, url};
     try {
       const createdBlog = await blogService.create(newBlog);
-      setBlogs(blogs.concat(createdBlog));
+      const detailedBlog = await blogService.getById(createdBlog.id);
+      setBlogs(blogs.concat(detailedBlog));
       showPopup(`Blog ${createdBlog.title} by ${createdBlog.author} is added`);
     } catch (error) {
       if (error.response.status === 401) {
@@ -65,6 +67,47 @@ function App() {
       } else {
         console.log(error);
       }
+    }
+  }
+
+  const handleSort = (isAscending) => {
+    const sortedBlogs = blogs.toSorted((blog1, blog2) => blog1.likes - blog2.likes);
+    if (!isAscending) {
+      return setBlogs(sortedBlogs.toReversed());
+    }
+    setBlogs(sortedBlogs);
+  }
+
+  const handleLike = async (id, newLikes) => {
+    try {
+      const updatedBlog = await blogService.update(id, {likes: newLikes});
+      setBlogs(blogs.map(blog => {
+        if (blog.id === updatedBlog.id) {
+          return {...blog, likes: updatedBlog.likes};
+        }
+        return blog;
+      }));
+    } catch (error) {
+      if (error.response.status === 401) {
+        showPopup('session expired', true);
+        logout();
+      } else {
+        console.log(error);
+      }
+    }
+  }
+
+  const handleDelete = async (id) => {
+    const confirmation = window.confirm("Are you sure you want to delete this user?");
+    if (!confirmation) {
+      return;
+    }
+
+    try {
+      await blogService.remove(id);
+      setBlogs(blogs.filter(blog => blog.id !== id));
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -95,8 +138,10 @@ function App() {
       {user &&
         <div>
           <UserStatusBar user={user} onLogout={logout} />
-          <NewBlogForm onSubmit={handleBlogCreation} />
-          <BlogList blogs={blogs} />
+          <Toggleable hideButtonText='cancel' expandButtonText='create blog'>
+            <NewBlogForm onSubmit={handleBlogCreation} />
+          </Toggleable>
+          <BlogList user={user} blogs={blogs} handleLike={handleLike} handleSort={handleSort} handleDelete={handleDelete} />
         </div>}
     </div>
   );
