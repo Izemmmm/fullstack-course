@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import LoginForm from './components/LoginForm';
 import loginService from './services/loginService';
 import blogService from './services/blogService';
@@ -25,11 +25,11 @@ function App() {
     setIsCritical(isCritical);
     setInfoMessage(message);
     setTimeout(() => setInfoMessage(''), 3000);
-  }
+  };
 
-  const handleLogin = async (username, password) => {
+  const handleLogin = async(username, password) => {
     try {
-      const {token: loginToken, ...loggedinUser} = await loginService.login({username, password});
+      const { token: loginToken, ...loggedinUser } = await loginService.login({ username, password });
       setUser(loggedinUser);
       setToken(loginToken);
       window.localStorage.setItem('token', loginToken);
@@ -41,17 +41,17 @@ function App() {
         console.log(error);
       }
     }
-  }
+  };
 
   const logout = () => {
     setToken(null);
     setUser(null);
     window.localStorage.removeItem('token');
     window.localStorage.removeItem('user');
-  }
+  };
 
-  const handleBlogCreation = async (title, author, url) => {
-    const newBlog = {title, author, url};
+  const handleBlogCreation = async(title, author, url) => {
+    const newBlog = { title, author, url };
     try {
       const createdBlog = await blogService.create(newBlog);
       const detailedBlog = await blogService.getById(createdBlog.id);
@@ -68,7 +68,7 @@ function App() {
         console.log(error);
       }
     }
-  }
+  };
 
   const handleSort = (isAscending) => {
     const sortedBlogs = blogs.toSorted((blog1, blog2) => blog1.likes - blog2.likes);
@@ -76,14 +76,14 @@ function App() {
       return setBlogs(sortedBlogs.toReversed());
     }
     setBlogs(sortedBlogs);
-  }
+  };
 
-  const handleLike = async (id, newLikes) => {
+  const handleLike = async(id, newLikes) => {
     try {
-      const updatedBlog = await blogService.update(id, {likes: newLikes});
+      const updatedBlog = await blogService.update(id, { likes: newLikes });
       setBlogs(blogs.map(blog => {
         if (blog.id === updatedBlog.id) {
-          return {...blog, likes: updatedBlog.likes};
+          return { ...blog, likes: updatedBlog.likes };
         }
         return blog;
       }));
@@ -95,10 +95,10 @@ function App() {
         console.log(error);
       }
     }
-  }
+  };
 
-  const handleDelete = async (id) => {
-    const confirmation = window.confirm("Are you sure you want to delete this user?");
+  const handleDelete = async(id) => {
+    const confirmation = window.confirm('Are you sure you want to delete this user?');
     if (!confirmation) {
       return;
     }
@@ -109,7 +109,7 @@ function App() {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
     blogService.setToken(token);

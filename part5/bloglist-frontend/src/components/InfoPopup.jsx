@@ -1,4 +1,4 @@
-export default function InfoBar({message, isCritical}) {
+export default function InfoBar({ message, isCritical }) {
   if (!message) {
     return;
   }
@@ -10,7 +10,7 @@ export default function InfoBar({message, isCritical}) {
     borderStyle: 'solid',
     borderRadius: 5,
     padding: 10
-  }
+  };
   return (
     <div style={style}>
       {message}

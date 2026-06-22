@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const baseUrl = '/api/blogs';
 
@@ -40,4 +40,4 @@ async function remove(id) {
   return response.data;
 }
 
-export default {setToken, getAll, getById, create, update, remove};
+export default { setToken, getAll, getById, create, update, remove };

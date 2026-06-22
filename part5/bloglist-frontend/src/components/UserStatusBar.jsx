@@ -1,4 +1,4 @@
-export default function UserStatusBar({user, onLogout}) {
+export default function UserStatusBar({ user, onLogout }) {
   return (
     <div>
       <h3>{`${user.name} is logged in`}</h3>

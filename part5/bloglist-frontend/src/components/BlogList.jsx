@@ -1,7 +1,7 @@
-import { useState } from "react";
-import Toggleable from "./Toggleable";
+import { useState } from 'react';
+import Toggleable from './Toggleable';
 
-export default function BlogList({user, blogs, handleLike, handleSort, handleDelete}) {
+export default function BlogList({ user, blogs, handleLike, handleSort, handleDelete }) {
   const [isSortAscending, setIsSortAscending] = useState(false);
   const blogStyle = {
     paddingTop: 10,
@@ -34,8 +34,7 @@ export default function BlogList({user, blogs, handleLike, handleSort, handleDel
                 {`${blog.user?.name}`}
               </div>
             </Toggleable>
-            {console.log(user.id, blog.user.id)}
-            {user.id === blog.user.id &&<button onClick={() => handleDelete(blog.id)}>remove</button>}
+            {user.id === blog.user.id && <button onClick={() => handleDelete(blog.id)}>remove</button>}
           </div>
         );
       })}

@@ -1,6 +1,6 @@
-import {useState} from "react";
+import { useState } from 'react';
 
-export default function LoginForm({onSubmit}) {
+export default function LoginForm({ onSubmit }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 

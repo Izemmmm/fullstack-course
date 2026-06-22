@@ -1,6 +1,6 @@
-import {useState} from "react";
+import { useState } from 'react';
 
-export default function NewBlogForm({onSubmit}) {
+export default function NewBlogForm({ onSubmit }) {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [url, setUrl] = useState('');
@@ -20,19 +20,19 @@ export default function NewBlogForm({onSubmit}) {
         <div>
           <label>
             title:
-            <input value={title} onChange={({target}) => setTitle(target.value)} />
+            <input value={title} onChange={({ target }) => setTitle(target.value)} />
           </label>
         </div>
         <div>
           <label>
             author:
-            <input value={author} onChange={({target}) => setAuthor(target.value)} />
+            <input value={author} onChange={({ target }) => setAuthor(target.value)} />
           </label>
         </div>
         <div>
           <label>
             url:
-            <input value={url} onChange={({target}) => setUrl(target.value)} />
+            <input value={url} onChange={({ target }) => setUrl(target.value)} />
           </label>
         </div>
         <button type="submit">create</button>
