@@ -1,15 +1,8 @@
 import { useState } from 'react';
-import Toggleable from './Toggleable';
+import { Link } from 'react-router-dom';
 
-export default function BlogList({ user, blogs, handleLike, handleSort, handleDelete }) {
+export default function BlogList({ blogs, handleSort }) {
   const [isSortAscending, setIsSortAscending] = useState(false);
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5
-  };
 
   return (
     <div>
@@ -17,24 +10,14 @@ export default function BlogList({ user, blogs, handleLike, handleSort, handleDe
       <button onClick={() => {
         handleSort(isSortAscending);
         setIsSortAscending(!isSortAscending);
-      }}>sort by likes</button>
+      }}>sort by likes
+      </button>
       {blogs.map(blog => {
         return (
-          <div key={blog.id} style={blogStyle}>
-            {`${blog.title} by ${blog.author}`}
-            <Toggleable expandButtonText='view' hideButtonText='hide'>
-              <div>
-                {`${blog.url}`}
-              </div>
-              <div>
-                {`likes: ${blog.likes}`}
-                <button onClick={() => handleLike(blog.id, blog.likes + 1)}>like</button>
-              </div>
-              <div>
-                {`${blog.user?.name}`}
-              </div>
-            </Toggleable>
-            {user.id === blog.user.id && <button onClick={() => handleDelete(blog.id)}>remove</button>}
+          <div key={blog.id}>
+            <Link to={`/blogs/${blog.id}`}>
+              {`${blog.title} by ${blog.author}`}
+            </Link>
           </div>
         );
       })}

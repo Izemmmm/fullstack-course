@@ -3,10 +3,10 @@ import LoginForm from './components/LoginForm';
 import loginService from './services/loginService';
 import blogService from './services/blogService';
 import BlogList from './components/BlogList';
-import UserStatusBar from './components/UserStatusBar';
 import NewBlogForm from './components/NewBlogForm';
 import InfoBar from './components/InfoPopup';
-import Toggleable from './components/Toggleable';
+import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom';
+import Blog from './components/Blog';
 
 function App() {
   const [token, setToken] = useState(() => {
@@ -17,9 +17,14 @@ function App() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [blogs, setBlogs] = useState([]);
-
   const [infoMessage, setInfoMessage] = useState(null);
   const [isCritical, setIsCritical] = useState(false);
+  const navigate = useNavigate();
+
+  const match = useMatch('/blogs/:id');
+  const openedBlog = match
+    ? blogs.find(blog => blog.id === match.params.id)
+    : null;
 
   const showPopup = (message, isCritical = false) => {
     setIsCritical(isCritical);
@@ -30,10 +35,13 @@ function App() {
   const handleLogin = async(username, password) => {
     try {
       const { token: loginToken, ...loggedinUser } = await loginService.login({ username, password });
+
       setUser(loggedinUser);
       setToken(loginToken);
       window.localStorage.setItem('token', loginToken);
       window.localStorage.setItem('user', JSON.stringify(loggedinUser));
+
+      navigate('/');
     } catch (error) {
       if (error.response.status === 401) {
         showPopup(error.response.data.error, true);
@@ -48,6 +56,8 @@ function App() {
     setUser(null);
     window.localStorage.removeItem('token');
     window.localStorage.removeItem('user');
+
+    navigate('/');
   };
 
   const handleBlogCreation = async(title, author, url) => {
@@ -57,6 +67,7 @@ function App() {
       const detailedBlog = await blogService.getById(createdBlog.id);
       setBlogs(blogs.concat(detailedBlog));
       showPopup(`Blog ${createdBlog.title} by ${createdBlog.author} is added`);
+      navigate('/');
     } catch (error) {
       if (error.response.status === 401) {
         showPopup('session expired', true);
@@ -106,6 +117,7 @@ function App() {
     try {
       await blogService.remove(id);
       setBlogs(blogs.filter(blog => blog.id !== id));
+      navigate('/');
     } catch (error) {
       console.log(error);
     }
@@ -116,10 +128,6 @@ function App() {
   }, [token]);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
-
     async function getBlogs() {
       try {
         const allBlogs = await blogService.getAll();
@@ -133,16 +141,21 @@ function App() {
 
   return (
     <div>
+      <div>
+        <Link style={{ padding: 5 }} to="/">blogs</Link>
+        {user && <Link style={{ padding: 5 }} to="/new_blog">new blog</Link>}
+        {user
+          ? <button onClick={logout}>log out</button>
+          : <Link style={{ padding: 5 }} to="/login">login</Link>}
+      </div>
       <InfoBar message={infoMessage} isCritical={isCritical} />
-      {!user && <LoginForm onSubmit={handleLogin} />}
-      {user &&
-        <div>
-          <UserStatusBar user={user} onLogout={logout} />
-          <Toggleable hideButtonText='cancel' expandButtonText='create blog'>
-            <NewBlogForm onSubmit={handleBlogCreation} />
-          </Toggleable>
-          <BlogList user={user} blogs={blogs} handleLike={handleLike} handleSort={handleSort} handleDelete={handleDelete} />
-        </div>}
+      <Routes>
+        <Route path="/" element={<BlogList blogs={blogs} handleSort={handleSort} />} />
+        <Route path="/new_blog" element={<NewBlogForm onSubmit={handleBlogCreation} />} />
+        <Route path="/login" element={<LoginForm onSubmit={handleLogin} />} />
+        <Route path="/blogs/:id" element={<Blog blog={openedBlog}
+          handleDelete={handleDelete} handleLike={handleLike} userId={user?.id} />} />
+      </Routes>
     </div>
   );
 }
