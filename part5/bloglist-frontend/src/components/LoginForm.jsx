@@ -1,3 +1,4 @@
+import { Button, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
 export default function LoginForm({ onSubmit }) {
@@ -11,22 +12,16 @@ export default function LoginForm({ onSubmit }) {
 
   return (
     <div>
-      <h2>log in to bloglist</h2>
+      <Typography variant='h5'>log in to bloglist</Typography>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>
-            username
-            <input value={username} onChange={event => setUsername(event.target.value)}/>
-          </label>
+          <TextField label="username" variant='standard' value={username} onChange={event => setUsername(event.target.value)}/>
         </div>
         <div>
-          <label>
-            password
-            <input type="password" value={password} onChange={event => setPassword(event.target.value)} />
-          </label>
+          <TextField label="password" variant='standard' type="password" value={password} onChange={event => setPassword(event.target.value)} />
         </div>
         <div>
-          <button type="submit">log in</button>
+          <Button type="submit" variant='contained'>log in</Button>
         </div>
       </form>
     </div>

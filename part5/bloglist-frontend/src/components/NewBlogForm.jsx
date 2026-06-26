@@ -1,3 +1,4 @@
+import { Button, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
 export default function NewBlogForm({ onSubmit }) {
@@ -15,27 +16,18 @@ export default function NewBlogForm({ onSubmit }) {
 
   return (
     <div>
-      <h2>create new blog</h2>
+      <Typography variant="h5">Create new blog</Typography>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>
-            title:
-            <input value={title} onChange={({ target }) => setTitle(target.value)} />
-          </label>
+          <TextField label="title" value={title} onChange={({ target }) => setTitle(target.value)} />
         </div>
         <div>
-          <label>
-            author:
-            <input value={author} onChange={({ target }) => setAuthor(target.value)} />
-          </label>
+          <TextField label="author" value={author} onChange={({ target }) => setAuthor(target.value)} />
         </div>
         <div>
-          <label>
-            url:
-            <input value={url} onChange={({ target }) => setUrl(target.value)} />
-          </label>
+          <TextField label="url" value={url} onChange={({ target }) => setUrl(target.value)} />
         </div>
-        <button type="submit">create</button>
+        <Button type="submit" variant="contained" style={{ marginTop: 10 }}>create</Button>
       </form>
     </div>
   );

@@ -4,9 +4,10 @@ import loginService from './services/loginService';
 import blogService from './services/blogService';
 import BlogList from './components/BlogList';
 import NewBlogForm from './components/NewBlogForm';
-import InfoBar from './components/InfoPopup';
-import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom';
+import { Route, Routes, useMatch, useNavigate } from 'react-router-dom';
 import Blog from './components/Blog';
+import { Alert, Container } from '@mui/material';
+import PageBar from './components/PageBar';
 
 function App() {
   const [token, setToken] = useState(() => {
@@ -17,8 +18,7 @@ function App() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [blogs, setBlogs] = useState([]);
-  const [infoMessage, setInfoMessage] = useState(null);
-  const [isCritical, setIsCritical] = useState(false);
+  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
   const match = useMatch('/blogs/:id');
@@ -26,10 +26,10 @@ function App() {
     ? blogs.find(blog => blog.id === match.params.id)
     : null;
 
-  const showPopup = (message, isCritical = false) => {
-    setIsCritical(isCritical);
-    setInfoMessage(message);
-    setTimeout(() => setInfoMessage(''), 3000);
+  const showNotification = (message, severity = 'success') => {
+    console.log(severity);
+    setNotification({ message, severity });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const handleLogin = async(username, password) => {
@@ -44,7 +44,7 @@ function App() {
       navigate('/');
     } catch (error) {
       if (error.response.status === 401) {
-        showPopup(error.response.data.error, true);
+        showNotification(error.response.data.error, 'error');
       } else {
         console.log(error);
       }
@@ -66,15 +66,15 @@ function App() {
       const createdBlog = await blogService.create(newBlog);
       const detailedBlog = await blogService.getById(createdBlog.id);
       setBlogs(blogs.concat(detailedBlog));
-      showPopup(`Blog ${createdBlog.title} by ${createdBlog.author} is added`);
+      showNotification(`Blog ${createdBlog.title} by ${createdBlog.author} is added`);
       navigate('/');
     } catch (error) {
       if (error.response.status === 401) {
-        showPopup('session expired', true);
+        showNotification('session expired', 'error');
         logout();
       }
       if (error.response.status === 400) {
-        showPopup(error.response.data.error, true);
+        showNotification(error.response.data.error, 'error');
       } else {
         console.log(error);
       }
@@ -100,7 +100,7 @@ function App() {
       }));
     } catch (error) {
       if (error.response.status === 401) {
-        showPopup('session expired', true);
+        showNotification('session expired', 'error');
         logout();
       } else {
         console.log(error);
@@ -119,7 +119,12 @@ function App() {
       setBlogs(blogs.filter(blog => blog.id !== id));
       navigate('/');
     } catch (error) {
-      console.log(error);
+      if (error.response.status === 401) {
+        showNotification('session expired', 'error');
+        logout();
+      } else {
+        console.log(error);
+      }
     }
   };
 
@@ -140,15 +145,13 @@ function App() {
   }, [user]);
 
   return (
-    <div>
-      <div>
-        <Link style={{ padding: 5 }} to="/">blogs</Link>
-        {user && <Link style={{ padding: 5 }} to="/new_blog">new blog</Link>}
-        {user
-          ? <button onClick={logout}>log out</button>
-          : <Link style={{ padding: 5 }} to="/login">login</Link>}
-      </div>
-      <InfoBar message={infoMessage} isCritical={isCritical} />
+    <Container>
+      <PageBar user={user} onLogout={logout} />
+      {notification && (
+        <Alert severity={notification.severity}>
+          {notification.message}
+        </Alert>
+      )}
       <Routes>
         <Route path="/" element={<BlogList blogs={blogs} handleSort={handleSort} />} />
         <Route path="/new_blog" element={<NewBlogForm onSubmit={handleBlogCreation} />} />
@@ -156,7 +159,7 @@ function App() {
         <Route path="/blogs/:id" element={<Blog blog={openedBlog}
           handleDelete={handleDelete} handleLike={handleLike} userId={user?.id} />} />
       </Routes>
-    </div>
+    </Container>
   );
 }
 

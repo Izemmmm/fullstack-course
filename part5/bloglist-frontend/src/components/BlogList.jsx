@@ -1,3 +1,4 @@
+import { Button, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -6,18 +7,19 @@ export default function BlogList({ blogs, handleSort }) {
 
   return (
     <div>
-      <h2>Blogs</h2>
-      <button onClick={() => {
+      <Typography variant='h5'>Blogs</Typography>
+      <Button variant="contained" sx={{ mb: 2 }} onClick={() => {
         handleSort(isSortAscending);
         setIsSortAscending(!isSortAscending);
       }}>sort by likes
-      </button>
+      </Button>
       {blogs.map(blog => {
         return (
           <div key={blog.id}>
-            <Link to={`/blogs/${blog.id}`}>
+            <Button component={Link} to={`/blogs/${blog.id}`}
+              variant='outlined' sx={{ mb: 0.5 }}>
               {`${blog.title} by ${blog.author}`}
-            </Link>
+            </Button>
           </div>
         );
       })}

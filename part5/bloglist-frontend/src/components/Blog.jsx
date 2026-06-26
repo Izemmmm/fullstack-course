@@ -1,24 +1,30 @@
+import { Box, Button, Card, Typography } from '@mui/material';
+
 export default function Blog({ blog, userId, handleLike, handleDelete }) {
   if (!blog) {
     return null;
   }
 
   return (
-    <div key={blog.id}>
-      <h2>
-        {`${blog.author}: ${blog.title}`}
-      </h2>
-      <div>
+    <Card sx={{ margin: 5, padding: 1 }}>
+      <Typography variant="h5">
+        {blog.title}
+      </Typography>
+      <Typography color="textSecondary">
+        {`by ${blog.author}`}
+      </Typography>
+      <Box sx={{ height: 20 }}/>
+      <Typography component="a" href={blog.url} >
         {`${blog.url}`}
-      </div>
-      <div>
-        {`likes: ${blog.likes}`}
-        <button onClick={() => handleLike(blog.id, blog.likes + 1)}>like</button>
-      </div>
-      <div>
+      </Typography>
+      <Typography color="textSecondary">
         {`Added by ${blog.user.name}`}
-      </div>
-      {(userId === blog.user.id) && <button onClick={() => handleDelete(blog.id)}>remove</button>}
-    </div>
+      </Typography>
+      <Typography color="textSecondary">
+        {`likes: ${blog.likes}`}
+        <Button variant="contained" sx={{ ml: 1 }} onClick={() => handleLike(blog.id, blog.likes + 1)}>like</Button>
+      </Typography>
+      {(userId === blog.user.id) && <Button variant="contained" color="error" onClick={() => handleDelete(blog.id)}>remove</Button>}
+    </Card>
   );
 }
