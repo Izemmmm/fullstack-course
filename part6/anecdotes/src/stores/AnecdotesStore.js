@@ -19,6 +19,7 @@ const formattedAnecdotes = initiAnecdotes.map((anecdote) => ({
 
 const useAnecdotesStore = create(set => ({
   anecdotes: formattedAnecdotes,
+  filter: '',
   actions: {
     add: (newAnecdote) => set(state => {
       const anecdoteToAdd = {
@@ -45,9 +46,20 @@ const useAnecdotesStore = create(set => ({
       const sortedAnecdotes = updatedAnecdotes.toSorted((an1, an2) => an2.votes - an1.votes);
 
       return { anecdotes: sortedAnecdotes };
-    })
+    }),
+    setFilter: (newFilter) => set(() => ({ filter: newFilter }))
   }
 }));
 
-export const useAnecdotes = () => useAnecdotesStore(state => state.anecdotes);
+export const useAnecdotes = () => {
+  const anecdotes = useAnecdotesStore(state => state.anecdotes);
+  const filter = useAnecdotesStore(state => state.filter);
+
+  if (!filter) {
+    return anecdotes;
+  }
+
+  return anecdotes.filter(anecdote => anecdote.content.toLowerCase().includes(filter.toLowerCase()));
+};
+export const useAnecdoteFilter = () => useAnecdotesStore(state => state.filter);
 export const useAnecdotesActions = () => useAnecdotesStore(state => state.actions);
