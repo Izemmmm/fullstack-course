@@ -13,6 +13,7 @@ export function useAnecdotes() {
     onSuccess: (createdAnecdote) => {
       const oldAnecdotes = queryClient.getQueryData(['anecdotes']);
       queryClient.setQueryData(['anecdotes'], oldAnecdotes.concat(createdAnecdote));
+      showNotification(`new anecdote is created: ${createdAnecdote.content}`, 4000);
     },
     onError: () => {
       showNotification('Too short anecdote, at least 5 characters required', 4000);
